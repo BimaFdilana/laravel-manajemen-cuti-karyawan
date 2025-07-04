@@ -30,6 +30,7 @@ Aplikasi ini memiliki dua antarmuka utama: **Panel Admin** untuk pengelolaan dat
     Admin dapat mengelola data master seperti **Ruangan/Bagian** yang akan digunakan pada form pengajuan cuti.
 
 ---
+untuk login-role menggunakan -> https://github.com/akunbeben/fortify-role/tree/master
 
 ## 🚀 Cara Menjalankan Project Secara Lokal
 
@@ -87,11 +88,14 @@ php artisan serve
 ```
 
 ### 7. Akses Aplikasi
-Panel Admin: Buka http://localhost:8000 (akan mengarah ke halaman login).
-Jadwal Publik: Buka http://localhost:8000/jadwal-cuti.
+Panel Admin: Buka http://localhost:8000 (akan mengarah ke halaman login).  
+Jadwal Publik: Buka http://localhost:8000/jadwal-cuti.  
 
 ## 👥 Akun Default (Untuk Pengujian)
 
 Admin
-Email: admin@example.com (sesuaikan dengan data seeder Anda)
-Password: password (sesuaikan dengan data seeder Anda)
+Email: admin@example.com (sesuaikan dengan data seeder Anda)  
+Password: password (sesuaikan dengan data seeder Anda)  
+
+untuk login-role menggunakan package -> https://github.com/akunbeben/fortify-role/tree/master
+
