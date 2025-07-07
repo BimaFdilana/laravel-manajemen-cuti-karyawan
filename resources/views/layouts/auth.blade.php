@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
     <title>@yield('title') &mdash; Stisla</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('img/logo.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/logo3.png') }}">
 
     <!-- General CSS Files -->
     <link rel="stylesheet" href="{{ asset('library/bootstrap/dist/css/bootstrap.min.css') }}">

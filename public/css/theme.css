@@ -1,0 +1,106 @@
+/* BUTTON PRIMARY */
+.btn-primary {
+    background-color: #de202a;
+    border-color: #de202a;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #b71c25;
+    border-color: #a31921;
+}
+
+/* BUTTON SECONDARY */
+.btn-secondary {
+    background-color: #0aa399;
+    border-color: #0aa399;
+    color: #fff;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background-color: #08877f;
+    border-color: #077770;
+}
+
+/* BUTTON DANGER */
+.btn-danger {
+    background-color: #de202a;
+    border-color: #de202a;
+}
+
+.btn-danger:hover {
+    background-color: #b71c25;
+    border-color: #a31921;
+}
+
+/* BUTTON WARNING */
+.btn-warning {
+    background-color: #f9a825;
+    border-color: #f9a825;
+    color: #fff;
+}
+
+.btn-warning:hover {
+    background-color: #f57f17;
+    border-color: #ef6c00;
+}
+
+/* CARD */
+.card {
+    border: 1px solid #e0e0e0;
+    background-color: #f3f7f7;
+    color: #6a6969;
+}
+
+.card-header {
+    background-color: #de202a;
+    color: white;
+    font-weight: bold;
+}
+
+/* NAVBAR / SIDEBAR */
+.main-sidebar {
+    background-color: #0aa399;
+}
+
+.sidebar-menu .active > a {
+    background-color: #de202a !important;
+    color: white !important;
+}
+
+.sidebar-menu li a {
+    color: #f3f7f7;
+}
+
+.sidebar-menu li a:hover {
+    background-color: #08877f;
+    color: white;
+}
+
+/* TABLE HEADER */
+.table thead th {
+    background-color: #0aa399;
+    color: #fff;
+}
+
+/* ALERT SUCCESS */
+.alert-success {
+    background-color: #0aa399;
+    border-color: #0aa399;
+    color: #fff;
+}
+
+/* PROGRESS BAR COLORS */
+.bg-secondary {
+    background-color: #6a6969 !important;
+}
+.bg-danger {
+    background-color: #de202a !important;
+}
+.bg-warning {
+    background-color: #f9a825 !important;
+}
+.bg-success {
+    background-color: #0aa399 !important;
+}
