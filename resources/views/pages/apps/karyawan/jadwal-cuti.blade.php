@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jadwal Cuti Karyawan</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/logo3.png') }}">
     <link rel="stylesheet" href="{{ asset('css/karyawan.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -12,8 +13,14 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📅 Jadwal Cuti Karyawan</h1>
-            <p>Dashboard publik untuk memantau jadwal cuti</p>
+            <a href="/" class="page-logo">
+                <img src="{{ asset('img/logo3.png') }}" alt="Logo Perusahaan">
+            </a>
+
+            <div class="header-text">
+                <h1>📅 Jadwal Cuti Karyawan</h1>
+                <p>Dashboard publik untuk memantau jadwal cuti</p>
+            </div>
         </div>
         <div class="controls">
             <div class="filter-group">

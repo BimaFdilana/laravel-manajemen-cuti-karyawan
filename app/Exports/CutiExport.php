@@ -3,46 +3,62 @@
 namespace App\Exports;
 
 use App\Models\Cuti;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Border; // <-- Import Border style
-use PhpOffice\PhpSpreadsheet\Style\Fill;   // <-- Import Fill style
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Maatwebsite\Excel\Concerns\Exportable;
 
-class CutiExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class CutiExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
+    use Exportable;
+
+    // Properti filter diperbarui
     protected $nama;
-    protected $bulan;
-    protected $tahun;
+    protected $tanggalMulai;
+    protected $tanggalAkhir;
     private $rowNumber = 0;
 
-    public function __construct($nama = null, $bulan = null, $tahun = null)
+    // Constructor diperbarui untuk menerima filter baru
+    public function __construct($nama = null, $tanggalMulai = null, $tanggalAkhir = null)
     {
         $this->nama = $nama;
-        $this->bulan = $bulan;
-        $this->tahun = $tahun;
+        $this->tanggalMulai = $tanggalMulai;
+        $this->tanggalAkhir = $tanggalAkhir;
     }
 
-    public function collection()
+    /**
+     * Mengambil data dari database menggunakan query.
+     * Logika filter diubah di sini.
+     */
+    public function query()
     {
         $query = Cuti::query();
 
         if ($this->nama) {
             $query->where('nama', 'like', '%' . $this->nama . '%');
         }
-        if ($this->bulan) {
-            $query->whereMonth('tanggal_cuti', $this->bulan);
-        }
-        if ($this->tahun) {
-            $query->whereYear('tanggal_cuti', $this->tahun);
+
+        // Logika filter baru untuk rentang tanggal
+        if ($this->tanggalMulai && $this->tanggalAkhir) {
+            $query->whereBetween('tanggal_cuti', [$this->tanggalMulai, $this->tanggalAkhir]);
+        } elseif ($this->tanggalMulai) {
+            $query->where('tanggal_cuti', '>=', $this->tanggalMulai);
+        } elseif ($this->tanggalAkhir) {
+            $query->where('tanggal_cuti', '<=', $this->tanggalAkhir);
         }
 
-        return $query->orderBy('tanggal_cuti', 'asc')->get();
+        return $query->orderBy('tanggal_cuti', 'asc');
     }
 
+    /**
+     * Mendefinisikan judul kolom.
+     * Tidak ada perubahan di sini.
+     */
     public function headings(): array
     {
         return [
@@ -56,6 +72,10 @@ class CutiExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
         ];
     }
 
+    /**
+     * Memetakan data untuk setiap baris.
+     * Tidak ada perubahan di sini.
+     */
     public function map($cuti): array
     {
         $this->rowNumber++;
@@ -72,20 +92,16 @@ class CutiExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
         ];
     }
 
-
     /**
      * Menerapkan style ke sheet.
+     * Tidak ada perubahan di sini, semua style Anda dipertahankan.
      */
     public function styles(Worksheet $sheet)
     {
-        // Mengatur tinggi baris untuk heading
         $sheet->getRowDimension(1)->setRowHeight(32);
-
-        // Mengambil range data dari sel A1 sampai kolom dan baris terakhir
         $cellRange = 'A1:' . $sheet->getHighestColumn() . $sheet->getHighestRow();
 
         return [
-            // Style baris pertama (heading)
             1 => [
                 'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
                 'fill' => [
@@ -97,10 +113,6 @@ class CutiExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
                     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ],
             ],
-
-            // ===============================================
-            // STYLE BARU: Tambahkan border ke seluruh tabel
-            // ===============================================
             $cellRange => [
                 'borders' => [
                     'allBorders' => [

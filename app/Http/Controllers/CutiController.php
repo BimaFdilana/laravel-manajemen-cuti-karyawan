@@ -12,23 +12,27 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use App\Exports\CutiExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 
 class CutiController extends Controller
 {
     public function index(Request $request)
     {
+
         $query = Cuti::query();
 
-        if ($request->has('nama') && $request->nama != '') {
+        if ($request->filled('nama')) {
             $query->where('nama', 'like', '%' . $request->nama . '%');
         }
+        $tanggalMulai = $request->input('tanggal_mulai');
+        $tanggalAkhir = $request->input('tanggal_akhir');
 
-        if ($request->has('bulan') && $request->bulan != '') {
-            $query->whereMonth('tanggal_cuti', $request->bulan);
-        }
-
-        if ($request->has('tahun') && $request->tahun != '') {
-            $query->whereYear('tanggal_cuti', $request->tahun);
+        if ($tanggalMulai && $tanggalAkhir) {
+            $query->whereBetween('tanggal_cuti', [$tanggalMulai, $tanggalAkhir]);
+        } elseif ($tanggalMulai) {
+            $query->where('tanggal_cuti', '>=', $tanggalMulai);
+        } elseif ($tanggalAkhir) {
+            $query->where('tanggal_cuti', '<=', $tanggalAkhir);
         }
 
         $cutis = $query->orderBy('tanggal_cuti', 'desc')->get();
@@ -99,13 +103,11 @@ class CutiController extends Controller
 
     public function export(Request $request)
     {
-        // Ambil filter dari request
         $nama = $request->input('nama');
-        $bulan = $request->input('bulan');
-        $tahun = $request->input('tahun');
+        $tanggalMulai = $request->input('tanggal_mulai');
+        $tanggalAkhir = $request->input('tanggal_akhir');
 
-        // Kirim filter ke CutiExport
-        return Excel::download(new CutiExport($nama, $bulan, $tahun), 'data-cuti-' . date('Y-m-d') . '.xlsx');
+        return Excel::download(new CutiExport($nama, $tanggalMulai, $tanggalAkhir), 'data-cuti-' . now()->format('Y-m-d') . '.xlsx');
     }
 
     public function destroy(Cuti $cuti)

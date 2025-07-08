@@ -32,29 +32,16 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Bulan</label>
-                                                <select name="bulan" class="form-control">
-                                                    <option value="">Semua Bulan</option>
-                                                    @for ($i = 1; $i <= 12; $i++)
-                                                        <option value="{{ $i }}"
-                                                            {{ request('bulan') == $i ? 'selected' : '' }}>
-                                                            {{ \Carbon\Carbon::create()->month($i)->format('F') }}
-                                                        </option>
-                                                    @endfor
-                                                </select>
+                                                <label>Dari Tanggal</label>
+                                                <input type="date" class="form-control" name="tanggal_mulai"
+                                                    value="{{ request('tanggal_mulai') }}">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Tahun</label>
-                                                <select name="tahun" class="form-control">
-                                                    <option value="">Semua Tahun</option>
-                                                    @for ($i = date('Y'); $i >= date('Y') - 5; $i--)
-                                                        <option value="{{ $i }}"
-                                                            {{ request('tahun') == $i ? 'selected' : '' }}>
-                                                            {{ $i }}</option>
-                                                    @endfor
-                                                </select>
+                                                <label>Sampai Tanggal</label>
+                                                <input type="date" class="form-control" name="tanggal_akhir"
+                                                    value="{{ request('tanggal_akhir') }}">
                                             </div>
                                         </div>
                                         <div class="col-md-2 d-flex align-items-end">
@@ -145,6 +132,5 @@
         </section>
     </div>
 @endsection
-
 @push('scripts')
 @endpush
