@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('ruangans', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_ruangan'); // Kolom untuk nama ruangan
+            $table->string('nama_ruangan');
             $table->timestamps();
         });
     }

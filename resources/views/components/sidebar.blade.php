@@ -25,6 +25,11 @@
                     <span>Ruangan/Bagian</span></a>
             </li>
 
+            <li class="menu-karyawan {{ Request::is('karyawan*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('karyawan.index') }}"><i class="fa fa-user"></i>
+                    <span>Data Karyawan</span></a>
+            </li>
+
             <li class="menu-notifikasi {{ Request::is('notifications*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('notifications.index') }}"><i class="fa fa-bell"></i>
                     <span>Notifikasi</span></a>

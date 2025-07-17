@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Cuti;
+use Carbon\CarbonPeriod;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -17,13 +18,11 @@ class CutiExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
 {
     use Exportable;
 
-    // Properti filter diperbarui
     protected $nama;
     protected $tanggalMulai;
     protected $tanggalAkhir;
     private $rowNumber = 0;
 
-    // Constructor diperbarui untuk menerima filter baru
     public function __construct($nama = null, $tanggalMulai = null, $tanggalAkhir = null)
     {
         $this->nama = $nama;
@@ -31,71 +30,53 @@ class CutiExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
         $this->tanggalAkhir = $tanggalAkhir;
     }
 
-    /**
-     * Mengambil data dari database menggunakan query.
-     * Logika filter diubah di sini.
-     */
     public function query()
     {
-        $query = Cuti::query();
-
+        $query = Cuti::query()->with(['karyawan', 'karyawan.ruangan']);
         if ($this->nama) {
-            $query->where('nama', 'like', '%' . $this->nama . '%');
+            $query->whereHas('karyawan', function ($q) {
+                $q->where('nama_karyawan', 'like', '%' . $this->nama . '%');
+            });
         }
 
-        // Logika filter baru untuk rentang tanggal
         if ($this->tanggalMulai && $this->tanggalAkhir) {
-            $query->whereBetween('tanggal_cuti', [$this->tanggalMulai, $this->tanggalAkhir]);
+            $query->whereBetween('tanggal_mulai_cuti', [$this->tanggalMulai, $this->tanggalAkhir]);
         } elseif ($this->tanggalMulai) {
-            $query->where('tanggal_cuti', '>=', $this->tanggalMulai);
+            $query->where('tanggal_mulai_cuti', '>=', $this->tanggalMulai);
         } elseif ($this->tanggalAkhir) {
-            $query->where('tanggal_cuti', '<=', $this->tanggalAkhir);
+            $query->where('tanggal_mulai_cuti', '<=', $this->tanggalAkhir);
         }
 
-        return $query->orderBy('tanggal_cuti', 'asc');
+        return $query->orderBy('tanggal_mulai_cuti', 'asc');
     }
 
-    /**
-     * Mendefinisikan judul kolom.
-     * Tidak ada perubahan di sini.
-     */
     public function headings(): array
     {
-        return [
-            'No',
-            'Nama',
-            'Ruangan / Bagian',
-            'Tanggal Cuti',
-            'Jumlah Cuti',
-            'Keperluan Cuti',
-            'Keterangan',
-        ];
+        return ['No', 'NIK', 'Nama Karyawan', 'Ruangan / Bagian', 'Jatah Cuti Tahunan', 'Sisa Jatah Cuti', 'Tanggal Cuti', 'Jumlah Hari', 'Keperluan Cuti', 'Keterangan'];
     }
 
-    /**
-     * Memetakan data untuk setiap baris.
-     * Tidak ada perubahan di sini.
-     */
     public function map($cuti): array
     {
         $this->rowNumber++;
-        $tanggalCuti = $cuti->tanggal_cuti->format('d/m/Y') . ' - ' . $cuti->tanggal_akhir_cuti->format('d/m/Y');
 
-        return [
-            $this->rowNumber,
-            $cuti->nama,
-            $cuti->ruangan,
-            $tanggalCuti,
-            $cuti->jumlah_cuti,
-            $cuti->keperluan_cuti,
-            $cuti->keterangan,
-        ];
+        $period = CarbonPeriod::create($cuti->tanggal_mulai_cuti, $cuti->tanggal_akhir_cuti);
+        $dates = [];
+
+        if ($cuti->tanggal_mulai_cuti->isSameMonth($cuti->tanggal_akhir_cuti)) {
+            foreach ($period as $date) {
+                $dates[] = $date->format('d');
+            }
+            $tanggalCutiFormatted = implode(', ', $dates) . $cuti->tanggal_akhir_cuti->format('/m/Y');
+        } else {
+            foreach ($period as $date) {
+                $dates[] = $date->format('d/m');
+            }
+            $tanggalCutiFormatted = implode(', ', $dates) . $cuti->tanggal_akhir_cuti->format('/Y');
+        }
+
+        return [$this->rowNumber, $cuti->karyawan->nik ?? 'N/A', $cuti->karyawan->nama_karyawan ?? 'N/A', $cuti->karyawan->ruangan->nama_ruangan ?? 'N/A', $cuti->karyawan->jatah_cuti ?? 0, $cuti->karyawan->sisa_cuti ?? 0, $tanggalCutiFormatted, $cuti->jumlah_cuti, $cuti->keperluan_cuti, $cuti->keterangan];
     }
 
-    /**
-     * Menerapkan style ke sheet.
-     * Tidak ada perubahan di sini, semua style Anda dipertahankan.
-     */
     public function styles(Worksheet $sheet)
     {
         $sheet->getRowDimension(1)->setRowHeight(32);
@@ -113,7 +94,7 @@ class CutiExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
                     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ],
             ],
-            $cellRange => [
+            'A1:' . $sheet->getHighestColumn() . $sheet->getHighestRow() => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,

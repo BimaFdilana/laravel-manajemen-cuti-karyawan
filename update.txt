@@ -1,0 +1,33 @@
+routes -> web
+dashboard-general-dashboard
+jadwal-cuti
+
+folder ( karyawan )
+ - c - e - i
+
+folder ( cuti )
+ - c - e - i
+
+ sidebar
+
+ Seeder
+ -> ruanganSeeder
+ -> DatabaseSeeder
+
+ Migration
+ -> create_ruangan_table
+ -> create_karyawan_table
+ -> create_cutis_table
+
+ and mobile to
+
+Controller
+CutiController
+DashboardController
+KaryawanController
+
+Exports
+CutiExport
+
+Notifications
+CutiNotification

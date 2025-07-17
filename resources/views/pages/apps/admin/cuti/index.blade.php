@@ -66,59 +66,64 @@
                                         <thead>
                                             <tr>
                                                 <th>No</th>
-                                                <th>Nama & Ruangan</th>
-                                                <th>Tanggal & Progres</th>
-                                                <th>Jumlah</th>
-                                                <th>Aksi</th>
+                                                <th>Nama Karyawan</th>
+                                                <th>Ringkasan Pengajuan</th>
+                                                <th>Progres Jatah Cuti</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse ($cutis as $cuti)
+                                            @forelse ($karyawans as $karyawan)
                                                 <tr>
                                                     <td>{{ $loop->iteration }}</td>
                                                     <td>
-                                                        <div><b>{{ $cuti->nama }}</b></div>
-                                                        <div class="text-muted">{{ $cuti->ruangan }}</div>
-                                                    </td>
-                                                    <td>
-                                                        <div>{{ $cuti->tanggal_cuti->format('d M Y') }} -
-                                                            {{ $cuti->tanggal_akhir_cuti->format('d M Y') }}</div>
-                                                        @php
-                                                            $persentase = $cuti->progres_persentase;
-                                                            $colorClass = 'bg-secondary';
-                                                            if ($persentase > 0) {
-                                                                $colorClass = 'bg-danger';
-                                                                if ($persentase >= 34 && $persentase < 67) {
-                                                                    $colorClass = 'bg-warning';
-                                                                } elseif ($persentase >= 67) {
-                                                                    $colorClass = 'bg-success';
-                                                                }
-                                                            }
-                                                        @endphp
-                                                        <div class="progress mt-1" data-height="6" data-toggle="tooltip"
-                                                            title="{{ $persentase > 0 ? $persentase . '% Selesai' : 'Belum Dimulai' }}">
-                                                            <div class="progress-bar {{ $colorClass }}"
-                                                                role="progressbar" style="width: {{ $persentase }}%;"
-                                                                aria-valuenow="{{ $persentase }}" aria-valuemin="0"
-                                                                aria-valuemax="100"></div>
+                                                        <div>
+                                                            <b>{{ $karyawan->nama_karyawan }}</b>
+                                                        </div>
+                                                        <div class="text-muted">
+                                                            {{ $karyawan->ruangan->nama_ruangan ?? 'N/A' }}
                                                         </div>
                                                     </td>
-                                                    <td>{{ $cuti->jumlah_cuti }} hari</td>
                                                     <td>
-                                                        <a href="{{ route('cuti.edit', $cuti->id) }}"
-                                                            class="btn btn-sm btn-warning">Edit</a>
-                                                        <form action="{{ route('cuti.destroy', $cuti->id) }}"
-                                                            method="POST" class="d-inline"
-                                                            onsubmit="return confirm('Yakin ingin menghapus data ini?');">
-                                                            @csrf @method('DELETE')
-                                                            <button type="submit"
-                                                                class="btn btn-sm btn-danger">Hapus</button>
-                                                        </form>
+                                                        <div>Total Pengajuan: <b>{{ $karyawan->cutis->count() }} kali</b>
+                                                        </div>
+                                                        <button class="btn btn-sm btn-info mt-2" data-toggle="modal"
+                                                            data-target="#detailCutiModal"
+                                                            data-karyawan-nama="{{ $karyawan->nama_karyawan }}"
+                                                            data-karyawan-nik="{{ $karyawan->nik }}"
+                                                            data-karyawan-profesi="{{ $karyawan->profesi }}"
+                                                            data-karyawan-ruangan="{{ $karyawan->ruangan->nama_ruangan ?? 'N/A' }}"
+                                                            data-cutis="{{ $karyawan->cutis->toJson() }}">
+                                                            <i class="fa fa-eye"></i> Lihat Detail Cuti
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $cutiDiambil = $karyawan->cuti_diambil;
+                                                            $sisaCuti = $karyawan->sisa_cuti;
+                                                            $totalJatahCuti = $cutiDiambil + $sisaCuti;
+                                                            $persentaseJatah =
+                                                                $totalJatahCuti > 0
+                                                                    ? ($cutiDiambil / $totalJatahCuti) * 100
+                                                                    : 0;
+                                                        @endphp
+                                                        <div>
+                                                            <div class="text-small">Terpakai:
+                                                                <b>{{ $cutiDiambil }}</b> dari
+                                                                <b>{{ $totalJatahCuti }}</b>
+                                                            </div>
+                                                            <div class="progress" data-height="6" data-toggle="tooltip"
+                                                                title="Sisa Jatah Cuti: {{ $sisaCuti }}">
+                                                                <div class="progress-bar bg-warning" role="progressbar"
+                                                                    style="width: {{ $persentaseJatah }}%;"
+                                                                    aria-valuenow="{{ $persentaseJatah }}"
+                                                                    aria-valuemin="0" aria-valuemax="100"></div>
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="5" class="text-center">Data tidak ditemukan.</td>
+                                                    <td colspan="4" class="text-center">Data tidak ditemukan.</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>
@@ -131,6 +136,142 @@
             </div>
         </section>
     </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="detailCutiModal">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detail Cuti: <span id="modal-nama-karyawan"></span></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>NIK:</strong> <span id="modal-nik"></span></p>
+                            <p class="mb-1"><strong>Profesi:</strong> <span id="modal-profesi"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Ruangan:</strong> <span id="modal-ruangan"></span></p>
+                        </div>
+                    </div>
+
+                    <h6>Daftar Riwayat Pengajuan Cuti:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Tanggal Cuti</th>
+                                    <th>Jumlah Hari</th>
+                                    <th>Keperluan</th>
+                                    <th>Progres</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-detail-cuti-body">
+                                {{-- Konten diisi oleh JavaScript --}}
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-whitesmoke br">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
 @push('scripts')
+    <script>
+        $(function() {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        $('#detailCutiModal').on('show.bs.modal', function(event) {
+            var button = $(event.relatedTarget);
+            var modal = $(this);
+
+            var nama = button.data('karyawan-nama');
+            var nik = button.data('karyawan-nik');
+            var profesi = button.data('karyawan-profesi');
+            var ruangan = button.data('karyawan-ruangan');
+            var cutis = button.data('cutis');
+
+            modal.find('#modal-nama-karyawan').text(nama);
+            modal.find('#modal-nik').text(nik);
+            modal.find('#modal-profesi').text(profesi);
+            modal.find('#modal-ruangan').text(ruangan);
+
+            var tableBody = modal.find('#modal-detail-cuti-body');
+            tableBody.empty();
+
+            if (cutis.length > 0) {
+                $.each(cutis, function(index, cuti) {
+                    let tglMulai = new Date(cuti.tanggal_mulai_cuti).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+                    let tglAkhir = new Date(cuti.tanggal_akhir_cuti).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+
+                    let persentase = cuti.progres_persentase;
+                    let colorClass = persentase >= 67 ? 'bg-success' : (persentase >= 34 ? 'bg-warning' :
+                        'bg-danger');
+                    if (persentase <= 0) colorClass = 'bg-secondary';
+                    let title = persentase > 0 ? persentase + '% Selesai' : 'Belum Dimulai';
+
+                    let progressBarHtml = `
+                    <div class="progress" style="height: 6px;" data-toggle="tooltip" title="${title}">
+                        <div class="progress-bar ${colorClass}" role="progressbar" style="width: ${persentase}%;" aria-valuenow="${persentase}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                `;
+
+
+
+                    let editUrlTemplate = '{{ route('cuti.edit', ['cuti' => 'PLACEHOLDER']) }}';
+                    let deleteUrlTemplate = '{{ route('cuti.destroy', ['cuti' => 'PLACEHOLDER']) }}';
+
+                    let editUrl = editUrlTemplate.replace('PLACEHOLDER', cuti.id);
+                    let deleteUrl = deleteUrlTemplate.replace('PLACEHOLDER', cuti.id);
+
+                    let csrfToken = `{{ csrf_token() }}`;
+
+                    let row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${tglMulai} - ${tglAkhir}</td>
+                        <td>${cuti.jumlah_cuti} hari</td>
+                        <td>${cuti.keperluan_cuti}</td>
+                        <td>${progressBarHtml}</td>
+                        <td>
+                            <a href="${editUrl}" class="btn btn-sm btn-warning">Edit</a>
+                            <form action="${deleteUrl}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini? Ini akan mengembalikan jatah cuti karyawan.');">
+                                <input type="hidden" name="_token" value="${csrfToken}">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                `;
+                    tableBody.append(row);
+                });
+            } else {
+                tableBody.append('<tr><td colspan="6" class="text-center">Tidak ada data cuti.</td></tr>');
+            }
+
+            modal.find('[data-toggle="tooltip"]').tooltip();
+        });
+
+        $('#detailCutiModal').on('hidden.bs.modal', function() {
+            $('.tooltip').remove();
+        });
+    </script>
 @endpush

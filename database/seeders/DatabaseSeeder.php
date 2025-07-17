@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
+use App\Models\Ruangan;
+use App\Models\Karyawan;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,6 +21,17 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
+
+        Schema::disableForeignKeyConstraints();
+
+        // Kosongkan tabel (truncate) di sini
+        // Pastikan urutannya benar, tabel yang dirujuk (ruangans)
+        // dikosongkan sebelum tabel yang merujuk (karyawans)
+        Ruangan::truncate();
+        // Karyawan::truncate(); // jika ada seeder karyawan
+
+        // Aktifkan kembali pengecekan foreign key
+        Schema::enableForeignKeyConstraints();
 
         $this->call([
             RoleSeeder::class,

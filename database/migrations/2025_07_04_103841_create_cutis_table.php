@@ -10,13 +10,14 @@ return new class extends Migration
     {
         Schema::create('cutis', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
-            $table->string('ruangan');
-            $table->date('tanggal_cuti');
+            $table->foreignId('karyawan_id')->constrained('karyawans')->onDelete('cascade');
+            $table->date('tanggal_mulai_cuti');
+            $table->date('tanggal_akhir_cuti');
             $table->integer('jumlah_cuti');
             $table->text('keperluan_cuti');
             $table->text('keterangan');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

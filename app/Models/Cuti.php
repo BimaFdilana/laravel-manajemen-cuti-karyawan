@@ -2,55 +2,59 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Cuti extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
     protected $fillable = [
-        'nama',
-        'ruangan',
-        'tanggal_cuti',
+        'karyawan_id',
+        'tanggal_mulai_cuti',
+        'tanggal_akhir_cuti',
         'jumlah_cuti',
         'keperluan_cuti',
         'keterangan',
     ];
 
     protected $casts = [
-        'tanggal_cuti' => 'date',
+        'tanggal_mulai_cuti' => 'date',
+        'tanggal_akhir_cuti' => 'date',
     ];
 
-    public function getTanggalAkhirCutiAttribute()
+    protected $appends = ['progres_persentase'];
+
+    public function karyawan()
     {
-        return $this->tanggal_cuti->addDays($this->jumlah_cuti - 1);
+        return $this->belongsTo(Karyawan::class);
     }
 
     public function getProgresPersentaseAttribute()
     {
-        $today = Carbon::today();
-        $startDate = $this->tanggal_cuti;
-        $endDate = $this->tanggal_akhir_cuti;
+        $now = Carbon::now();
+        $start = $this->tanggal_mulai_cuti;
+        $end = $this->tanggal_akhir_cuti->endOfDay();
 
-        if ($today->isBefore($startDate)) {
+        if ($now->isBefore($start)) {
             return 0;
         }
-        if ($today->isAfter($endDate)) {
+
+        if ($now->isAfter($end)) {
             return 100;
         }
 
-        $totalDays = $this->jumlah_cuti;
-        if ($totalDays <= 0) {
-            return 0;
+        $totalDuration = $start->diffInDays($end) + 1;
+
+        if ($totalDuration <= 0) {
+            return 100;
         }
 
-        $daysPassed = $startDate->diffInDays($today) + 1;
-        $percentage = ($daysPassed / $totalDays) * 100;
+        $daysPassed = $start->diffInDays($now) + 1;
 
-        return intval($percentage);
+        $percentage = round(($daysPassed / $totalDuration) * 100);
+
+        return min($percentage, 100);
     }
 }

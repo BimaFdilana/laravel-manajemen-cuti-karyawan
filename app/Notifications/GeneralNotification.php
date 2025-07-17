@@ -2,23 +2,26 @@
 
 namespace App\Notifications;
 
-use App\Models\Cuti;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class CutiNotification extends Notification
+class GeneralNotification extends Notification
 {
     use Queueable;
 
-    protected $cuti;
+    protected $title;
     protected $message;
+    protected $link;
+    protected $icon;
 
-    public function __construct(Cuti $cuti, string $message)
+    public function __construct(string $title, string $message, string $link = '#', string $icon = 'fas fa-bell')
     {
-        $this->cuti = $cuti;
+        $this->title = $title;
         $this->message = $message;
+        $this->link = $link;
+        $this->icon = $icon;
     }
 
     public function via(object $notifiable): array
@@ -29,10 +32,10 @@ class CutiNotification extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title' => 'Pengajuan Cuti Baru',
+            'title' => $this->title,
             'message' => $this->message,
-            'cuti_id' => $this->cuti->id,
-            'karyawan_nama' => $this->cuti->karyawan->nama_karyawan ?? 'N/A',
+            'link' => $this->link,
+            'icon' => $this->icon,
         ];
     }
 }
